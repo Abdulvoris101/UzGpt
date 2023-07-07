@@ -28,3 +28,7 @@ class ApiTokenRead(BaseModel):
     token: str
     userId: uuid.UUID
     name: str
+
+
+class ApiTokenCreate(BaseModel):
+    name: str

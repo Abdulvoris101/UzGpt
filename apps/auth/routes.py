@@ -27,11 +27,12 @@ current_user = fastapi_users.current_user()
 
 @router.post("/apitoken")
 async def add_token(
+    item: scheme.ApiTokenCreate,
     user: User = Depends(current_user),
     session: AsyncSession = Depends(get_async_session)
     ) -> scheme.ApiTokenRead:
 
-    obj = ApiToken(userId=user.id)
+    obj = ApiToken(userId=user.id, name=item.name)
 
     await obj.save(session)
 

@@ -23,8 +23,9 @@ class ApiToken(Base):
     userId = Column(UUID, ForeignKey(User.id))
     name = Column(String)
 
-    def __init__(self, userId):
+    def __init__(self, userId, name):
         self.userId = userId
+        self.name = name
 
     async def save(self, session):
         session.add(self)
