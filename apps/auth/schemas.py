@@ -1,8 +1,8 @@
 import uuid
 
 from fastapi_users import schemas
-from datetime import datetime
-from typing import Optional, List
+from datetime import timezone, datetime
+from typing import Optional
 from pydantic import BaseModel
 
 
@@ -14,7 +14,7 @@ class UserRead(schemas.BaseUser[uuid.UUID]):
 class UserCreate(schemas.BaseUserCreate):
     firstName: str
     lastName: str
-    createdAt: Optional[datetime]
+    createdAt: datetime
 
 
 class UserUpdate(schemas.BaseUserUpdate):
@@ -23,7 +23,8 @@ class UserUpdate(schemas.BaseUserUpdate):
     createdAt: Optional[datetime]
 
 
-
-class ApiTokenScheme(BaseModel):
+class ApiTokenRead(BaseModel):
     id: uuid.UUID
     token: str
+    userId: uuid.UUID
+    name: str

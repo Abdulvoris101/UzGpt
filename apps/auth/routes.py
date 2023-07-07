@@ -1,10 +1,13 @@
-from fastapi import APIRouter, Request, Depends
+from fastapi import APIRouter, Depends, Request
 import apps.auth.schemas as scheme
 import uuid
-from .models import User
+from .models import User, ApiToken
 from fastapi_users import FastAPIUsers
 from .manager import get_user_manager
 from .setup import auth_backend
+from sqlalchemy.ext.asyncio import AsyncSession
+from db.setup import get_async_session
+from sqlalchemy import insert, values, select
 
 router = APIRouter()
 
@@ -20,11 +23,31 @@ current_user = fastapi_users.current_user()
 
 # Custom endpoints
 
+#  Api Token
 
 @router.post("/apitoken")
-async def add_token(item: scheme.ApiTokenScheme, user: User = Depends(current_user)):
+async def add_token(
+    user: User = Depends(current_user),
+    session: AsyncSession = Depends(get_async_session)
+    ) -> scheme.ApiTokenRead:
 
-    return {"user_id": user.id}
+    obj = ApiToken(userId=user.id)
+
+    await obj.save(session)
+
+    return scheme.ApiTokenRead(**obj.__dict__)
+
+
+@router.get("/apitoken")
+async def get_tokens(
+    user: User = Depends(current_user),
+    session: AsyncSession = Depends(get_async_session),
+    ):
+
+    query = select(ApiToken).where(ApiToken.userId == user.id)
+    result = await session.execute(query)
+
+    return result.scalars().all()
 
 
 
