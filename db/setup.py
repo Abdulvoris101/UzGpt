@@ -3,7 +3,6 @@ from sqlalchemy.orm import DeclarativeBase
 from typing import AsyncGenerator
 
 
-
 class Base(DeclarativeBase):
     pass
 
@@ -11,6 +10,13 @@ class Base(DeclarativeBase):
 engine = create_async_engine('postgresql+asyncpg://postgres:postgres@localhost:5432/uzgpt')
 async_session_maker = async_sessionmaker(engine, expire_on_commit=False)
 
+
+def get_db():
+    db = async_session_maker()
+    try:
+        yield db
+    finally:
+        db.close()
 
 async def create_db_and_tables():
     async with engine.begin() as conn:

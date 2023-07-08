@@ -32,3 +32,10 @@ class ApiTokenRead(BaseModel):
 
 class ApiTokenCreate(BaseModel):
     name: str
+
+class CreditRead(BaseModel):
+    amount: int
+
+class CreditUpdate(BaseModel):
+    userId: uuid.UUID
+    amount: int
