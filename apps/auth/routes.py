@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends
 import apps.auth.schemas as scheme
 import uuid
 from .models import User, ApiToken
@@ -7,7 +7,9 @@ from .manager import get_user_manager
 from .setup import auth_backend
 from sqlalchemy.ext.asyncio import AsyncSession
 from db.setup import get_async_session
-from sqlalchemy import insert, values, select
+from sqlalchemy import insert, values, select, delete
+import typing
+from utils import JsonResponse
 
 router = APIRouter()
 
@@ -25,12 +27,12 @@ current_user = fastapi_users.current_user()
 
 #  Api Token
 
-@router.post("/apitoken")
+@router.post("/apitoken", response_model=scheme.ApiTokenRead, tags=["token"])
 async def add_token(
     item: scheme.ApiTokenCreate,
     user: User = Depends(current_user),
     session: AsyncSession = Depends(get_async_session)
-    ) -> scheme.ApiTokenRead:
+    ):
 
     obj = ApiToken(userId=user.id, name=item.name)
 
@@ -39,7 +41,7 @@ async def add_token(
     return scheme.ApiTokenRead(**obj.__dict__)
 
 
-@router.get("/apitoken")
+@router.get("/apitoken", tags=["token"])
 async def get_tokens(
     user: User = Depends(current_user),
     session: AsyncSession = Depends(get_async_session),
@@ -49,6 +51,21 @@ async def get_tokens(
     result = await session.execute(query)
 
     return result.scalars().all()
+
+
+@router.delete("/apitoken/{pk}", tags=["token"])
+async def delete_token(
+    pk: uuid.UUID,
+    user: User = Depends(current_user),
+    session: AsyncSession = Depends(get_async_session),
+    ):
+    query = delete(ApiToken).where((ApiToken.id == pk) & (ApiToken.userId == user.id))
+    await session.execute(query)
+    
+    await session.commit()
+
+    return JsonResponse(message="Api token succesfully deleted", status_code=200)
+
 
 
 

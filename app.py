@@ -2,7 +2,7 @@ from fastapi import FastAPI
 import uvicorn
 from apps.auth.routes import router
 
-app = FastAPI()
+app = FastAPI(title="Uzgpt", description="Documentation of Uzgpt")
 app.include_router(router, prefix="/api")
 
 
