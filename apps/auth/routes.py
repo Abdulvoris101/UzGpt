@@ -12,8 +12,8 @@ import typing
 from utils import JsonResponse
 
 
-router = APIRouter()
-
+authRouter = APIRouter()
+router = authRouter
 
 fastapi_users = FastAPIUsers[User, uuid.UUID](
     get_user_manager,
