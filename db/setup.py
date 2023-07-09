@@ -1,13 +1,13 @@
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import DeclarativeBase
 from typing import AsyncGenerator
-
+from .cred import DB_URL
 
 class Base(DeclarativeBase):
     pass
 
 
-engine = create_async_engine('postgresql+asyncpg://postgres:postgres@localhost:5432/uzgpt')
+engine = create_async_engine(DB_URL)
 async_session_maker = async_sessionmaker(engine, expire_on_commit=False)
 
 
