@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 import uvicorn
 from apps.auth.routes import authRouter
 from apps.core.routes import coreRouter
@@ -9,6 +9,8 @@ app = FastAPI(title="Uzgpt", description="Documentation of Uzgpt")
 app.include_router(authRouter, prefix="/api")
 app.include_router(coreRouter, prefix="/api")
 app.include_router(modelRouter)
+
+
 
 
 if __name__ == "__main__":

@@ -2,8 +2,8 @@ from fastapi import APIRouter, Depends, HTTPException
 import apps.auth.schemas as scheme
 import uuid
 from .models import User, ApiToken, Credit
-from fastapi_users import FastAPIUsers
 from .manager import get_user_manager
+from fastapi_users import FastAPIUsers
 from .setup import auth_backend
 from sqlalchemy.ext.asyncio import AsyncSession
 from db.setup import get_async_session
@@ -22,6 +22,7 @@ fastapi_users = FastAPIUsers[User, uuid.UUID](
 
 
 current_user = fastapi_users.current_user()
+current_optional_user = fastapi_users.current_user(optional=True)
 super_user = fastapi_users.current_user(superuser=True)
 
 

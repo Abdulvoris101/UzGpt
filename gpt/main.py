@@ -8,6 +8,7 @@ modelRouter = APIRouter()
 @modelRouter.on_event("startup")
 async def on_startup():
     print("Running")
+
     global model
     model = GPT4All("ggml-model-gpt4all-falcon-q4_0.bin")
     print("Loaded model")
@@ -64,7 +65,6 @@ class ChatCompletion(Completion):
     
     def complete(self):
         model.current_chat_session = self.messages
-        
         return {
             "object": self.object_,
             "created": datetime.now(),

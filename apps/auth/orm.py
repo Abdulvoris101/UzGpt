@@ -4,6 +4,18 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from db.setup import async_session_maker
 from fastapi import HTTPException
 
+
+class ApiTokenOrm:
+    
+    @classmethod
+    async def getByToken(self, token):
+        async with async_session_maker() as session:
+            query = select(ApiToken).where(ApiToken.token == token)
+            credit = await session.execute(query)
+            
+            return credit.scalar_one_or_none()
+
+
 class CreditOrm:
 
     @classmethod
