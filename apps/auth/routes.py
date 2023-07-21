@@ -30,6 +30,8 @@ super_user = fastapi_users.current_user(superuser=True)
 
 #  Api Token
 
+
+
 @router.post("/apitoken", response_model=scheme.ApiTokenRead, tags=["token"])
 async def add_token(
     item: scheme.ApiTokenCreate,

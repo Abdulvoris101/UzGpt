@@ -22,6 +22,8 @@ class ChatCompletionCreate(BaseModel):
         + "Temperature is a hyperparameter that controls the randomness of the generated text. It affects the probability distribution of the model's output tokens. A higher temperature (e.g., 1.5) makes the output more random and creative, while a lower temperature (e.g., 0.5) makes the output more focused, deterministic, and conservative. The default value is 0.8, which provides a balance between randomness and determinism. At the extreme, a temperature of 0 will always pick the most likely next token, leading to identical outputs in each run.",
     )
     
+    stream: bool = False
+    
     class Config:
         schema_extra = {
             "example": {
@@ -41,12 +43,16 @@ class CompletionCreate(BaseModel):
         default=16, ge=1, le=2048, description="The maximum number of tokens to generate."
     )
     temperature: float = Field(
-        default=0.8,
+        default=0.2,
         ge=0.0,
         le=2.0,
         description="Adjust the randomness of the generated text.\n\n"
         + "Temperature is a hyperparameter that controls the randomness of the generated text. It affects the probability distribution of the model's output tokens. A higher temperature (e.g., 1.5) makes the output more random and creative, while a lower temperature (e.g., 0.5) makes the output more focused, deterministic, and conservative. The default value is 0.8, which provides a balance between randomness and determinism. At the extreme, a temperature of 0 will always pick the most likely next token, leading to identical outputs in each run.",
     )
+
+    stream: bool = False
+    top_k: int = 40
+    top_p: float = 0.1
     
     class Config:
         schema_extra = {

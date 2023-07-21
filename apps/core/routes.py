@@ -4,11 +4,12 @@ from gpt.main import ChatCompletion, Completion
 import apps.core.schemas as scheme
 import time
 from apps.auth.models import User, Credit
-from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from db.setup import get_async_session
 from apps.auth.orm import CreditOrm
 from .permissions import is_authenticated_or_token
+from sse_starlette.sse import EventSourceResponse
+import json
 
 
 coreRouter = APIRouter()
@@ -19,8 +20,7 @@ router = coreRouter
 async def chat_completion(
     item: scheme.ChatCompletionCreate,
     request: Request,
-    user: User = Depends(current_optional_user),
-    session: AsyncSession = Depends(get_async_session)
+    user: User = Depends(current_optional_user)
     ):
 
     userId = await is_authenticated_or_token(request, user)
@@ -29,21 +29,24 @@ async def chat_completion(
 
     amount = await CreditOrm.spend(id=credit.id, sum_=15)
     
-    request = item.dict()
+    requestData = item.dict()
 
-    request["amount"] = amount
-    request["used"] = 15
+    requestData["amount"] = amount
+    requestData["used"] = 15
         
-    chat = ChatCompletion(**request)
+    chat = ChatCompletion(**requestData)
 
-    start_time = time.perf_counter()
+    data = await chat.complete()
 
-    output = chat.complete()
+    if item.stream:
+        if data is not None:
+            async def event_stream():
+                async for item in data:
+                    yield json.dumps(item)
 
-    end_time = time.perf_counter()
-    execution_time = end_time - start_time
-
-    return {"message": output, "exc_time": execution_time}
+            return EventSourceResponse(event_stream(), media_type="application/json")
+    
+    return data
 
 
 @router.post("/completion", tags=["generate"])
@@ -60,18 +63,21 @@ async def completion(
 
     amount = await CreditOrm.spend(id=credit.id, sum_=5)
     
-    request = item.dict()
+    requestData = item.dict()
 
-    request["amount"] = amount
-    request["used"] = 5
+    requestData["amount"] = amount
+    requestData["used"] = 5
     
-    chat = Completion(**request)
+    chat = Completion(**requestData)
+    
+    data = await chat.complete()
 
-    start_time = time.perf_counter()
+    if item.stream:
+        if data is not None:
+            async def event_stream():
+                async for item in data:
+                    yield json.dumps(item)
 
-    output = chat.complete()
-
-    end_time = time.perf_counter()
-    execution_time = end_time - start_time
-
-    return {"message": output, "exc_time": execution_time}
+            return EventSourceResponse(event_stream(), media_type="application/json")
+    
+    return data

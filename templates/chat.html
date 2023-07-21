@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Uzgpt API SSE Example</title>
+</head>
+<body>
+    <h1>Uzgpt API SSE Example</h1>
+    Messages: <span id="messages">[]</span><br><br>
+    <input type="number" name="" placeholder="Max tokens" id="maxtoken"><br><br>
+    <textarea id="prompt" rows="4" cols="50" placeholder="Enter your prompt here"></textarea><br><br>
+    <input type="checkbox" name="" id="stream">
+    <br><br>
+    <button onclick="startChat()">Start Chat</button>
+    <br><br>
+
+    Response: <div id="chat-box"></div>
+    Amount: <span id="chat-amount"></span>
+
+    <script>
+        const messages_array = [{"role": "system", "content": "You are helpfull assistant"}]
+
+        const chatBox = document.getElementById("chat-box");
+        const chatAmount = document.getElementById("chat-amount");
+        let token = "88bc03b5d3d113b06efe8237c898526ee988c71f5b45a408b2987c81603e5be7"
+        const eventSourceUrl = "http://localhost:8000/api/completion/chat"; // Replace with your actual backend URL
+        const messages_html = document.getElementById("messages");
+
+        function handleSSE(eventData) {
+            const messages = eventData.split('data: ').filter(msg => msg.trim() !== '');
+            
+            for (const message of messages) {
+                if (message.startsWith(': ping')) {
+                    continue; // Ignore ping messages
+                }
+                try {
+                    const data = JSON.parse(message);
+                    chatBox.innerHTML += data.choices[0].content;
+                    chatAmount.innerHTML = data.amount
+                } catch (error) {
+                    console.log('Error parsing JSON:', error);
+                }
+            }
+            
+        }
+
+
+        async function startChat() {
+            const prompt = document.getElementById("prompt").value;
+            const maxtoken = document.getElementById("maxtoken").value;
+            const stream_ = document.getElementById("stream");
+            
+            messages_array.push({"role": "user", "content": prompt})
+
+            messages_html.innerHTML = JSON.stringify(messages_array)
+            
+            const headers = {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            };
+            
+
+            const data = JSON.stringify({
+                "messages": messages_array,
+                "stream": stream_.checked,
+                "max_tokens": maxtoken,
+            });
+
+            chatBox.innerHTML = "Loading..."
+            chatAmount.innerHTML = "Loading..."
+
+            const response = await fetch(eventSourceUrl, {
+                method: "POST",
+                headers,
+                body: data
+            });
+            
+            const reader = response.body.getReader();
+            
+            chatBox.innerHTML = ""
+            
+            while (true) {
+                const { value, done } = await reader.read();
+
+                if (done) {
+                    console.log("SSE connection closed.");
+                    break;
+                }
+
+                handleSSE(new TextDecoder().decode(value));
+            }
+
+            messages_array.push({"role": "assistant", "content": chatBox.innerHTML})
+            messages_html.innerHTML = JSON.stringify(messages_array)
+        }
+
+    </script>
+</body>
+</html>
