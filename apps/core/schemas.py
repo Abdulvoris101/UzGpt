@@ -51,8 +51,6 @@ class CompletionCreate(BaseModel):
     )
 
     stream: bool = False
-    top_k: int = 40
-    top_p: float = 0.1
     
     class Config:
         schema_extra = {
